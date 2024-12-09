@@ -2,15 +2,18 @@ package com.petya8bachey.file_server;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 @Service
+@EnableAsync
 public class FileService {
 
     @Autowired
@@ -31,20 +34,22 @@ public class FileService {
     }
 
     @Async
-    public void getFile(String name) {
+    public CompletableFuture<File> getFile(String name) {
         lock.readLock().lock();
+        File file;
         try {
             logger.info("Attempting to retrieve file with name: " + name);
             simulateDatabaseDelay();
-            fileRepository.findById(name);
+            file = fileRepository.findById(name).orElse(null);
             logger.info("File retrieved: " + name);
         } finally {
             lock.readLock().unlock();
         }
+        return CompletableFuture.completedFuture(file);
     }
 
     @Async
-    public void deleteFile(String name) {
+    public CompletableFuture<Void> deleteFile(String name) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to delete file with name: " + name);
@@ -58,11 +63,12 @@ public class FileService {
         } finally {
             lock.writeLock().unlock();
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Async
-    public void setContentToFile(String name, String content) {
-        lock.writeLock().lock();  // Блокируем на запись
+    public CompletableFuture<Void> setContentToFile(String name, String content) {
+        lock.writeLock().lock();
         try {
             logger.info("Attempting to add content to file: " + name);
             simulateDatabaseDelay();
@@ -75,20 +81,22 @@ public class FileService {
                 logger.info("File not found: " + name);
             }
         } finally {
-            lock.writeLock().unlock(); // Освобождаем блокировку на запись
+            lock.writeLock().unlock();
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Async
-    public void saveFile(File file) {
-        lock.writeLock().lock();  // Блокируем на запись
+    public CompletableFuture<Void> saveFile(File file) {
+        lock.writeLock().lock();
         try {
             logger.info("Attempting to save file: " + file.getName());
             simulateDatabaseDelay();
             fileRepository.save(file);
             logger.info("File saved: " + file.getName());
         } finally {
-            lock.writeLock().unlock(); // Освобождаем блокировку на запись
+            lock.writeLock().unlock();
         }
+        return CompletableFuture.completedFuture(null);
     }
 }

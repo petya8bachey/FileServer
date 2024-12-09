@@ -4,8 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,19 +34,26 @@ public class FileServiceTests {
     }
 
     @Test
-    void testGetFile_FileExists() {
+    void testGetFile_FileExists() throws ExecutionException, InterruptedException {
         File file = new File("file1", "content");
         when(fileRepository.findById("file1")).thenReturn(Optional.of(file));
 
-        fileService.getFile("file1");
+        Future<File> result = fileService.getFile("file1");
+        File fetchedFile = result.get();
+
+        assertNotNull(fetchedFile);
+        assertEquals("file1", fetchedFile.getName());
         verify(fileRepository, times(1)).findById("file1");
     }
 
     @Test
-    void testGetFile_FileNotFound() {
+    void testGetFile_FileNotFound() throws ExecutionException, InterruptedException {
         when(fileRepository.findById("file1")).thenReturn(Optional.empty());
 
-        fileService.getFile("file1");
+        Future<File> result = fileService.getFile("file1");
+        File fetchedFile = result.get();
+
+        assertNull(fetchedFile);
         verify(fileRepository, times(1)).findById("file1");
     }
 
@@ -68,21 +76,38 @@ public class FileServiceTests {
     }
 
     @Test
-    void testSetContentToFile_FileExists() {
+    void testSetContentToFile_FileExists() throws ExecutionException, InterruptedException {
         File file = new File("file1", "content");
         when(fileRepository.findById("file1")).thenReturn(Optional.of(file));
 
         fileService.setContentToFile("file1", "new content");
+
+        Future<Void> result = fileService.setContentToFile("file1", "new content");
+        result.get();
+
         verify(fileRepository, times(1)).save(file);
         assertEquals("new content", file.getContent());
     }
 
     @Test
-    void testSetContentToFile_FileNotFound() {
+    void testSetContentToFile_FileNotFound() throws ExecutionException, InterruptedException {
         when(fileRepository.findById("file1")).thenReturn(Optional.empty());
 
-        fileService.setContentToFile("file1", "new content");
+        Future<Void> result = fileService.setContentToFile("file1", "new content");
+        result.get();
         verify(fileRepository, times(1)).findById("file1");
         verify(fileRepository, never()).save(any());
+    }
+
+    @Test
+    void testDeleteFile_FileNotFound_WithArgumentCaptor() {
+        File file = new File("file1", "content");
+        when(fileRepository.findById("file1")).thenReturn(Optional.empty());
+
+        fileService.deleteFile("file1");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(fileRepository, never()).deleteById(captor.capture());
+        assertNull(captor.getValue());
     }
 }
