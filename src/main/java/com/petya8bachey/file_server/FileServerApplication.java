@@ -17,6 +17,7 @@ public class FileServerApplication implements CommandLineRunner {
 
     @Autowired
     private UserSimulation simulation;
+
     public static void main(String[] args) {
         SpringApplication.run(FileServerApplication.class, args);
     }

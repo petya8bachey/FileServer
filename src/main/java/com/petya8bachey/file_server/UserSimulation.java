@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Component
 @EnableAsync
@@ -42,7 +41,7 @@ public class UserSimulation {
 
     public CompletableFuture<Void> simulateMultipleUsers(int numberOfUsers) throws Exception {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-
+        logger.info("Simulating {} users start", numberOfUsers);
         for (String fileName : fileNames) {
             futures.add(fileService.saveFile(new File(fileName, "Random: ")));
         }
