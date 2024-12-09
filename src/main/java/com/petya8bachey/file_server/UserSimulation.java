@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.Async;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.Random;
 
 @Component
@@ -31,7 +30,6 @@ public class UserSimulation {
         } else {
             fileService.getFile(fileName);
         }
-        CompletableFuture.completedFuture(null);
     }
 
     public void simulateMultipleUsers(int numberOfUsers) {
