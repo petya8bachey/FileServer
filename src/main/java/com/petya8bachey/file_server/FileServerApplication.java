@@ -28,5 +28,6 @@ public class FileServerApplication implements CommandLineRunner {
         CompletableFuture<Void> users = simulation.simulateMultipleUsers(100);
         users.get();
         logger.info("Done");
+        System.exit(0);
     }
 }
