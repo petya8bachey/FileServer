@@ -12,27 +12,59 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
+/**
+ * Сервисный класс для работы с файлами, предоставляющий асинхронные операции.
+ * Использует FileRepository для доступа к данным о файлах.
+ * @author petya8bachey
+ * @version 1.0
+ */
 @Service
 @EnableAsync
 public class FileService {
 
+    /**
+     * Репозиторий для работы с данными о файлах.
+     * Используется для выполнения операций с файлами в базе данных.
+     */
     @Autowired
     private FileRepository fileRepository;
 
+    /**
+     * Механизм синхронизации для предотвращения конфликтов при параллельных операциях.
+     * Используется для блокировки чтения и записи.
+     */
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    /**
+     * Логгер для записи информации об операциях с файлами.
+     * Используется для логирования запросов и результатов операций.
+     */
     private static final Logger logger = Logger.getLogger(FileService.class.getName());
+
+    /**
+     * Объект для генерации случайных чисел.
+     * Используется для симуляции задержки доступа к базе данных.
+     */
     private final Random random = new Random();
 
+    /**
+     * Метод для имитации задержки доступа к базе данных.
+     */
     private void simulateDatabaseDelay() {
         try {
-            Thread.sleep(100 + random.nextInt(200));
+            Thread.sleep(100 + random.nextInt(200)); // Имитация случайной задержки
         } catch (InterruptedException e) {
             logger.info("Thread interrupted");
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Асинхронно получает файл по его имени.
+     *
+     * @param name имя файла для поиска
+     * @return CompletableFuture, содержащий найденный файл или null, если файл не найден
+     */
     @Async
     public CompletableFuture<File> getFile(String name) {
         lock.readLock().lock();
@@ -48,6 +80,12 @@ public class FileService {
         return CompletableFuture.completedFuture(file);
     }
 
+    /**
+     * Асинхронно удаляет файл по его имени.
+     *
+     * @param name имя файла для удаления
+     * @return CompletableFuture, завершающийся без результата
+     */
     @Async
     public CompletableFuture<Void> deleteFile(String name) {
         lock.writeLock().lock();
@@ -66,6 +104,13 @@ public class FileService {
         return CompletableFuture.completedFuture(null);
     }
 
+    /**
+     * Асинхронно устанавливает содержимое файла по его имени.
+     *
+     * @param name    имя файла, для которого устанавливается содержимое
+     * @param content новое содержимое файла
+     * @return CompletableFuture, завершающийся без результата
+     */
     @Async
     public CompletableFuture<Void> setContentToFile(String name, String content) {
         lock.writeLock().lock();
@@ -86,6 +131,12 @@ public class FileService {
         return CompletableFuture.completedFuture(null);
     }
 
+    /**
+     * Асинхронно сохраняет файл в базу данных.
+     *
+     * @param file файл для сохранения
+     * @return CompletableFuture, завершающийся без результата
+     */
     @Async
     public CompletableFuture<Void> saveFile(File file) {
         lock.writeLock().lock();
