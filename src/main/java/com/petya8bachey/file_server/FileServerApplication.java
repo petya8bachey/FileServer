@@ -24,7 +24,7 @@ public class FileServerApplication implements CommandLineRunner {
     /**
      * Логгер для регистрации информации о работе приложения.
      */
-    Logger logger = LoggerFactory.getLogger(FileServerApplication.class);
+    private final Logger logger = LoggerFactory.getLogger(FileServerApplication.class);
 
     /**
      * Сервис, отвечающий за симуляцию пользователей.

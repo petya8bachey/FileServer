@@ -56,7 +56,7 @@ public class UserSimulation {
     /**
      * Логгер для записи информации о симуляции.
      */
-    Logger logger = LoggerFactory.getLogger(UserSimulation.class);
+    private final Logger logger = LoggerFactory.getLogger(UserSimulation.class);
 
     /**
      * Симулирует операцию записи или чтения файла пользователем.

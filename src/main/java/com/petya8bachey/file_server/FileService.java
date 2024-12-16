@@ -1,5 +1,6 @@
 package com.petya8bachey.file_server;
 
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -39,7 +40,7 @@ public class FileService {
      * Логгер для записи информации об операциях с файлами.
      * Используется для логирования запросов и результатов операций.
      */
-    private static final Logger logger = Logger.getLogger(FileService.class.getName());
+    private final Logger logger = Logger.getLogger(FileService.class.getName());
 
     /**
      * Объект для генерации случайных чисел.
@@ -50,9 +51,11 @@ public class FileService {
     /**
      * Метод для имитации задержки доступа к базе данных.
      */
-    private void simulateDatabaseDelay() {
+    @Async
+    private CompletableFuture<Void> simulateDatabaseDelay() {
         try {
             Thread.sleep(100 + random.nextInt(200)); // Имитация случайной задержки
+            return CompletableFuture.completedFuture(null);
         } catch (InterruptedException e) {
             logger.info("Thread interrupted");
             throw new RuntimeException(e);
@@ -65,13 +68,14 @@ public class FileService {
      * @param name имя файла для поиска
      * @return CompletableFuture, содержащий найденный файл или null, если файл не найден
      */
+    @SneakyThrows
     @Async
     public CompletableFuture<File> getFile(String name) {
         lock.readLock().lock();
         File file;
         try {
             logger.info("Attempting to retrieve file with name: " + name);
-            simulateDatabaseDelay();
+            simulateDatabaseDelay().get();
             file = fileRepository.findById(name).orElse(null);
             logger.info("File retrieved: " + name);
         } finally {
@@ -86,12 +90,13 @@ public class FileService {
      * @param name имя файла для удаления
      * @return CompletableFuture, завершающийся без результата
      */
+    @SneakyThrows
     @Async
     public CompletableFuture<Void> deleteFile(String name) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to delete file with name: " + name);
-            simulateDatabaseDelay();
+            simulateDatabaseDelay().get();
             if (fileRepository.findById(name).isPresent()) {
                 fileRepository.deleteById(name);
                 logger.info("File deleted: " + name);
@@ -111,12 +116,13 @@ public class FileService {
      * @param content новое содержимое файла
      * @return CompletableFuture, завершающийся без результата
      */
+    @SneakyThrows
     @Async
     public CompletableFuture<Void> setContentToFile(String name, String content) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to add content to file: " + name);
-            simulateDatabaseDelay();
+            simulateDatabaseDelay().get();
             Optional<File> file = fileRepository.findById(name);
             if (file.isPresent()) {
                 file.get().setContent(content);
@@ -137,12 +143,13 @@ public class FileService {
      * @param file файл для сохранения
      * @return CompletableFuture, завершающийся без результата
      */
+    @SneakyThrows
     @Async
     public CompletableFuture<Void> saveFile(File file) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to save file: " + file.getName());
-            simulateDatabaseDelay();
+            simulateDatabaseDelay().get();
             fileRepository.save(file);
             logger.info("File saved: " + file.getName());
         } finally {
