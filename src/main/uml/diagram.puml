@@ -1,0 +1,50 @@
+@startuml
+class com.petya8bachey.file_server.FileServerApplication {
+- Logger logger
+- UserSimulation simulation
++ {static} void main(String[])
++ void run(String)
+}
+
+
+interface com.petya8bachey.file_server.FileRepository {
+}
+class com.petya8bachey.file_server.UserSimulation {
+- FileService fileService
+- List<String> fileNames
+- int numberOfFiles
+- Random random
+- Logger logger
++ CompletableFuture<Void> simulateUserWritingAndReading(String)
++ CompletableFuture<Void> simulateMultipleUsers(int)
++ void init()
+}
+
+
+class com.petya8bachey.file_server.FileService {
+- FileRepository fileRepository
+- ReadWriteLock lock
+- Logger logger
+- Random random
+- CompletableFuture<Void> simulateDatabaseDelay()
++ CompletableFuture<File> getFile(String)
++ CompletableFuture<Void> deleteFile(String)
++ CompletableFuture<Void> setContentToFile(String,String)
++ CompletableFuture<Void> saveFile(File)
+}
+
+
+class com.petya8bachey.file_server.File {
+- String name
+- String content
++ String getName()
++ String getContent()
++ void setContent(String)
+}
+
+
+
+
+org.springframework.boot.CommandLineRunner <|.. com.petya8bachey.file_server.FileServerApplication
+org.springframework.data.jpa.repository.JpaRepository <|-- com.petya8bachey.file_server.FileRepository
+@enduml
