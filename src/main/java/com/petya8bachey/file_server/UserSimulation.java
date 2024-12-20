@@ -67,16 +67,15 @@ public class UserSimulation {
      * @param fileName имя файла для операции
      * @return CompletableFuture, завершающийся без результата
      */
-    @SneakyThrows
     @Async
     public CompletableFuture<Void> simulateUserWritingAndReading(String fileName) {
         if (random.nextBoolean()) {
             String contentToAdd = Integer.toString(random.nextInt());
             CompletableFuture<Void> future = fileService.setContentToFile(fileName, contentToAdd);
-            future.get();
+            future.join();
         } else {
             CompletableFuture<File> future = fileService.getFile(fileName);
-            future.get();
+            future.join();
         }
         return CompletableFuture.completedFuture(null);
     }
@@ -89,7 +88,6 @@ public class UserSimulation {
      * @param numberOfUsers количество пользователей, которых нужно симулировать
      * @return CompletableFuture, завершающийся без результата
      */
-    @SneakyThrows
     public CompletableFuture<Void> simulateMultipleUsers(int numberOfUsers) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         logger.info("Simulating {} users start", numberOfUsers);

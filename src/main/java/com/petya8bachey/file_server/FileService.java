@@ -68,14 +68,13 @@ public class FileService {
      * @param name имя файла для поиска
      * @return CompletableFuture, содержащий найденный файл или null, если файл не найден
      */
-    @SneakyThrows
     @Async
     public CompletableFuture<File> getFile(String name) {
         lock.readLock().lock();
         File file;
         try {
             logger.info("Attempting to retrieve file with name: " + name);
-            simulateDatabaseDelay().get();
+            simulateDatabaseDelay().join();
             file = fileRepository.findById(name).orElse(null);
             logger.info("File retrieved: " + name);
         } finally {
@@ -90,13 +89,12 @@ public class FileService {
      * @param name имя файла для удаления
      * @return CompletableFuture, завершающийся без результата
      */
-    @SneakyThrows
     @Async
     public CompletableFuture<Void> deleteFile(String name) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to delete file with name: " + name);
-            simulateDatabaseDelay().get();
+            simulateDatabaseDelay().join();
             if (fileRepository.findById(name).isPresent()) {
                 fileRepository.deleteById(name);
                 logger.info("File deleted: " + name);
@@ -116,13 +114,12 @@ public class FileService {
      * @param content новое содержимое файла
      * @return CompletableFuture, завершающийся без результата
      */
-    @SneakyThrows
     @Async
     public CompletableFuture<Void> setContentToFile(String name, String content) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to add content to file: " + name);
-            simulateDatabaseDelay().get();
+            simulateDatabaseDelay().join();
             Optional<File> file = fileRepository.findById(name);
             if (file.isPresent()) {
                 file.get().setContent(content);
@@ -143,13 +140,12 @@ public class FileService {
      * @param file файл для сохранения
      * @return CompletableFuture, завершающийся без результата
      */
-    @SneakyThrows
     @Async
     public CompletableFuture<Void> saveFile(File file) {
         lock.writeLock().lock();
         try {
             logger.info("Attempting to save file: " + file.getName());
-            simulateDatabaseDelay().get();
+            simulateDatabaseDelay().join();
             fileRepository.save(file);
             logger.info("File saved: " + file.getName());
         } finally {
